@@ -1,0 +1,9 @@
+[package]
+name = "bp_viz"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1"
+nannou = "0.18"
+gtfs-structures = "0.31.0"
