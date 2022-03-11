@@ -9,8 +9,8 @@ use std::sync::Arc;
 
 use super::Model;
 use crate::constants::GTFS_URL;
-use crate::helpers::{coordinate_to_xy, distance};
-use crate::meta::Meta;
+use crate::utils::math::{coordinate_to_xy, distance};
+use crate::utils::meta::Meta;
 
 const START: &'static str = "088453";
 

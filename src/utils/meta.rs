@@ -1,13 +1,10 @@
 use gtfs_structures::{Gtfs, Trip};
 
-use crate::helpers::{calc_boundaries, calc_canvas_size};
+use crate::utils::boundaries::Boundaries;
 
 #[derive(Debug, Default)]
 pub struct Meta {
-    pub min_lat: f64,
-    pub max_lat: f64,
-    pub min_lng: f64,
-    pub max_lng: f64,
+    pub boundaries: Boundaries,
     pub width: f64,
     pub height: f64,
 }
@@ -19,14 +16,11 @@ impl Meta {
             .iter()
             .map(|(_, s)| (s.longitude.unwrap(), s.latitude.unwrap()));
 
-        let (min_lng, max_lng, min_lat, max_lat) = calc_boundaries(coords);
-        let (width, height) = calc_canvas_size(min_lng, max_lng, min_lat, max_lat);
+        let boundaries = Boundaries::from_coords(coords);
+        let (width, height) = boundaries.canvas_size();
 
         Self {
-            min_lat,
-            max_lat,
-            min_lng,
-            max_lng,
+            boundaries,
             width,
             height,
         }
@@ -38,14 +32,11 @@ impl Meta {
             .iter()
             .map(|s| (s.stop.longitude.unwrap(), s.stop.latitude.unwrap()));
 
-        let (min_lng, max_lng, min_lat, max_lat) = calc_boundaries(coords);
-        let (width, height) = calc_canvas_size(min_lng, max_lng, min_lat, max_lat);
+        let boundaries = Boundaries::from_coords(coords);
+        let (width, height) = boundaries.canvas_size();
 
         Self {
-            min_lat,
-            max_lat,
-            min_lng,
-            max_lng,
+            boundaries,
             width,
             height,
         }

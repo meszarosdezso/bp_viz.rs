@@ -1,27 +1,37 @@
 #![allow(dead_code)]
 
+use gtfs_structures::Trip;
 use nannou::{color, event::Update, prelude::pt2, App, Frame, LoopMode};
 
-use crate::constants::{GTFS_URL, HEIGHT, WIDTH};
-use crate::helpers::coordinate_to_xy;
-use crate::meta::Meta;
+use crate::constants::{CANVAS_HEIGHT, CANVAS_WIDTH, GTFS_URL};
+use crate::utils::math::coordinate_to_xy;
+use crate::utils::meta::Meta;
 
 use super::Model;
 
 const TRIP_ID: &'static str = "C32177100";
 
-pub fn model(app: &App) -> Model<()> {
-    app.set_loop_mode(LoopMode::loop_ntimes(1));
-    Model::from_url(GTFS_URL)
+#[derive(Default)]
+pub struct TripsContext {
+    trip: Trip,
 }
 
-pub fn update(_app: &App, _model: &mut Model<()>, _update: Update) {}
+pub fn model(app: &App) -> Model<TripsContext> {
+    app.set_loop_mode(LoopMode::loop_ntimes(1));
 
-pub fn view(app: &App, model: &Model<()>, frame: Frame) {
+    let model = Model::from_url(GTFS_URL);
+    let trip = model.gtfs.trips.get(TRIP_ID).unwrap().clone();
+
+    model.context(|_| TripsContext { trip })
+}
+
+pub fn update(_app: &App, _model: &mut Model<TripsContext>, _update: Update) {}
+
+pub fn view(app: &App, model: &Model<TripsContext>, frame: Frame) {
     let draw = app.draw();
     let color = color::SALMON;
 
-    let trip = model.gtfs.trips.get(TRIP_ID).unwrap();
+    let trip = &model.context.trip;
     let shape = model
         .gtfs
         .shapes
@@ -59,10 +69,10 @@ pub fn view(app: &App, model: &Model<()>, frame: Frame) {
     let last = &trip.stop_times.last().unwrap().stop;
 
     draw.text(&format!("{} ► {}", last.name, first.name))
-        .x_y(0., -((HEIGHT / 2 - 50) as f32))
+        .x_y(0., -((CANVAS_HEIGHT / 2 - 50) as f32))
         .color(color)
         .font_size(12)
-        .w((WIDTH - 100) as f32)
+        .w((CANVAS_WIDTH - 100) as f32)
         .left_justify();
 
     app.main_window()

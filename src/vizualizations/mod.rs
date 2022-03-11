@@ -3,15 +3,15 @@ pub mod trips;
 
 use gtfs_structures::Gtfs;
 
-use crate::meta::Meta;
+use crate::utils::meta::Meta;
 
 pub struct Model<C>
 where
     C: Default + Sized,
 {
-    meta: Meta,
-    gtfs: Gtfs,
     context: C,
+    gtfs: Gtfs,
+    meta: Meta,
 }
 
 impl<C: Default + Sized> Model<C> {
