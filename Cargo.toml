@@ -4,6 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = "1"
-nannou = "0.18"
 gtfs-structures = { git = "https://github.com/meszarosdezso/gtfs-structure", branch = "impl_clone_trip" }
+nannou = "0.18"
+rand = "0.8"

@@ -1,6 +1,5 @@
 use crate::constants::{CANVAS_HEIGHT, CANVAS_WIDTH};
 
-/// Earth boundaries.
 #[derive(Debug)]
 pub struct Boundaries {
     pub min_lng: f64,

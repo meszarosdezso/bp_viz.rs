@@ -7,22 +7,22 @@ use crate::utils::meta::Meta;
 
 pub struct Model<C>
 where
-    C: Default + Sized,
+    C: Default,
 {
     context: C,
     gtfs: Gtfs,
     meta: Meta,
 }
 
-impl<C: Default + Sized> Model<C> {
+impl<C: Default> Model<C> {
     fn from_url(url: &str) -> Model<C> {
         println!("Reading data from {}...", url);
         let gtfs = Gtfs::new(url).expect("Error while reading data.");
 
         Self {
+            context: Default::default(),
             gtfs,
             meta: Meta::default(),
-            context: Default::default(),
         }
     }
 

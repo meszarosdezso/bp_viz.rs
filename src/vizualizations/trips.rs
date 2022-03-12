@@ -1,7 +1,14 @@
 #![allow(dead_code)]
 
+use std::sync::Arc;
+
 use gtfs_structures::Trip;
-use nannou::{color, event::Update, prelude::pt2, App, Frame, LoopMode};
+use nannou::color::Rgb8;
+use nannou::event::WindowEvent;
+use nannou::event::{Event, Key, Update};
+use nannou::prelude::pt2;
+use nannou::{App, Frame, LoopMode};
+use rand::Rng;
 
 use crate::constants::{CANVAS_HEIGHT, CANVAS_WIDTH, GTFS_URL};
 use crate::utils::math::coordinate_to_xy;
@@ -13,35 +20,105 @@ const TRIP_ID: &'static str = "C32177100";
 
 #[derive(Default)]
 pub struct TripsContext {
-    trip: Trip,
+    history: Vec<Arc<Trip>>,
+    light: bool,
+}
+
+impl Model<TripsContext> {
+    fn new_trip(&mut self) {
+        let mut rng = rand::thread_rng();
+        let idx = rng.gen_range(0..self.gtfs.trips.len());
+        let id = self.gtfs.trips.keys().nth(idx).unwrap();
+        let trip = Arc::new(self.gtfs.get_trip(id).unwrap().clone());
+
+        self.meta = Meta::from_trip(&trip);
+        self.context.history.push(Arc::clone(&trip));
+    }
+
+    fn back(&mut self) {
+        self.context.history.pop();
+        self.meta = Meta::from_trip(self.context.history.last().unwrap());
+    }
 }
 
 pub fn model(app: &App) -> Model<TripsContext> {
-    app.set_loop_mode(LoopMode::loop_ntimes(1));
+    app.set_loop_mode(LoopMode::Wait);
 
-    let model = Model::from_url(GTFS_URL);
-    let trip = model.gtfs.trips.get(TRIP_ID).unwrap().clone();
+    let mut model = Model::from_url(GTFS_URL);
+    model.new_trip();
 
-    model.context(|_| TripsContext { trip })
+    println!("Rendering trip cards");
+    println!("Press 'SPACE' to generate a random one.");
+    println!("Press 'Backspace' to go back to the previous.");
+    println!("Press 'i' to toggle light mode.");
+    println!("Press 'r' to export the card as png.");
+
+    model
+}
+
+pub fn event(app: &App, model: &mut Model<TripsContext>, event: Event) {
+    match event {
+        Event::WindowEvent { simple, .. } => {
+            if let Some(event) = simple {
+                match event {
+                    WindowEvent::KeyPressed(code) if code == Key::Back => {
+                        if model.context.history.len() > 1 {
+                            model.back();
+                        }
+                    }
+                    WindowEvent::ReceivedCharacter(c) => match c {
+                        ' ' => {
+                            model.new_trip();
+                        }
+                        'r' => {
+                            if let Some(trip) = model.context.history.last() {
+                                let filename = format!("./export/trips/trip_{}.png", trip.id);
+                                app.main_window().capture_frame(filename);
+                            }
+                        }
+                        'i' => {
+                            model.context.light = !model.context.light;
+                        }
+                        _ => (),
+                    },
+                    _ => (),
+                }
+            }
+        }
+        _ => (),
+    }
 }
 
 pub fn update(_app: &App, _model: &mut Model<TripsContext>, _update: Update) {}
 
 pub fn view(app: &App, model: &Model<TripsContext>, frame: Frame) {
     let draw = app.draw();
-    let color = color::SALMON;
 
-    let trip = &model.context.trip;
+    let trip = model.context.history.last().unwrap();
+    let route = model.gtfs.get_route(&trip.route_id).unwrap();
     let shape = model
         .gtfs
         .shapes
         .get(trip.shape_id.as_ref().unwrap())
         .unwrap();
 
-    let meta = Meta::from_trip(trip);
+    let color = {
+        let color = route.route_color.unwrap();
+        Rgb8::new(color.r, color.g, color.b)
+    };
+
+    // TODO nicer bg color calculation
+    let darken_amount = if !model.context.light { 6. } else { 0.02 };
+    let bg_color = Rgb8::new(
+        (color.red as f32 / darken_amount) as u8,
+        (color.green as f32 / darken_amount) as u8,
+        (color.blue as f32 / darken_amount) as u8,
+    );
+
+    draw.background().color(bg_color);
 
     let poli = shape.iter().map(|s| {
-        let (x, y) = coordinate_to_xy(s.longitude, s.latitude, &meta);
+        let (x, y) = coordinate_to_xy(s.longitude, s.latitude, &model.meta);
         (pt2(x as f32, y as f32), color)
     });
 
@@ -60,7 +137,7 @@ pub fn view(app: &App, model: &Model<TripsContext>, frame: Frame) {
         draw.ellipse()
             .stroke(color)
             .stroke_weight(2.)
-            .color(color::BLACK)
+            .color(bg_color)
             .radius(8.)
             .x_y(x as f32, y as f32);
     }
@@ -71,12 +148,16 @@ pub fn view(app: &App, model: &Model<TripsContext>, frame: Frame) {
     draw.text(&format!("{} ► {}", last.name, first.name))
         .x_y(0., -((CANVAS_HEIGHT / 2 - 50) as f32))
         .color(color)
-        .font_size(12)
+        .font_size(16)
         .w((CANVAS_WIDTH - 100) as f32)
         .left_justify();
 
-    app.main_window()
-        .capture_frame(format!("./export/trips/trip_{}.png", TRIP_ID));
+    draw.text(&route.short_name)
+        .x_y(0., (CANVAS_HEIGHT / 2 - 50) as f32)
+        .color(color)
+        .font_size(32)
+        .w((CANVAS_WIDTH - 100) as f32)
+        .right_justify();
 
     draw.to_frame(app, &frame).unwrap();
 }

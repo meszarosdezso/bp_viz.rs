@@ -4,14 +4,15 @@ mod vizualizations;
 
 // update the module name for different vizualizations
 //                  ▼
-use vizualizations::stops as viz;
+use vizualizations::trips as viz;
 
 fn main() {
-    use viz::{model, update, view};
+    use viz::{event, model, update, view};
 
     nannou::app(model)
         .update(update)
         .simple_window(view)
+        .event(event)
         .size(constants::CANVAS_WIDTH, constants::CANVAS_HEIGHT)
         .run();
 }

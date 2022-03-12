@@ -16,14 +16,7 @@ impl Meta {
             .iter()
             .map(|(_, s)| (s.longitude.unwrap(), s.latitude.unwrap()));
 
-        let boundaries = Boundaries::from_coords(coords);
-        let (width, height) = boundaries.canvas_size();
-
-        Self {
-            boundaries,
-            width,
-            height,
-        }
+        Self::from_coords(coords)
     }
 
     pub fn from_trip(trip: &Trip) -> Self {
@@ -32,6 +25,10 @@ impl Meta {
             .iter()
             .map(|s| (s.stop.longitude.unwrap(), s.stop.latitude.unwrap()));
 
+        Self::from_coords(coords)
+    }
+
+    fn from_coords(coords: impl Iterator<Item = (f64, f64)>) -> Self {
         let boundaries = Boundaries::from_coords(coords);
         let (width, height) = boundaries.canvas_size();
 
