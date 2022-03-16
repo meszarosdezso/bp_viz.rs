@@ -103,7 +103,7 @@ pub fn view(app: &App, model: &Model<TripsContext>, frame: Frame) {
         .unwrap();
 
     let color = {
-        let color = route.route_color.unwrap();
+        let color = route.route_color;
         Rgb8::new(color.r, color.g, color.b)
     };
 

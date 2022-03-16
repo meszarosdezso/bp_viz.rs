@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-gtfs-structures = { git = "https://github.com/meszarosdezso/gtfs-structure", branch = "impl_clone_trip" }
+csv = "1"
+gtfs-structures = { git = "https://github.com/rust-transit/gtfs-structure" }
 nannou = "0.18"
 rand = "0.8"
+rodio = "0.15"

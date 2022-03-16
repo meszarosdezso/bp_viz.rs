@@ -1,3 +1,4 @@
+pub mod audio;
 pub mod stops;
 pub mod trips;
 
@@ -15,6 +16,15 @@ where
 }
 
 impl<C: Default> Model<C> {
+    #[allow(unused)]
+    fn new() -> Self {
+        Self {
+            context: Default::default(),
+            gtfs: Gtfs::default(),
+            meta: Meta::default(),
+        }
+    }
+
     fn from_url(url: &str) -> Model<C> {
         println!("Reading data from {}...", url);
         let gtfs = Gtfs::new(url).expect("Error while reading data.");
