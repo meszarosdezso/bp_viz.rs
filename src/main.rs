@@ -3,17 +3,26 @@ mod piano;
 mod utils;
 mod vizualizations;
 
-// update the module name for different vizualizations
-//                  ▼
-use vizualizations::audio as viz;
+use vizualizations::audio::AudioViz;
+use vizualizations::stops::StopsViz;
+use vizualizations::trips::TripsViz;
+use vizualizations::Vizualization;
 
 fn main() {
-    use viz::{event, model, update, view};
+    let args: Vec<String> = std::env::args().collect();
 
-    nannou::app(model)
-        .update(update)
-        .simple_window(view)
-        .event(event)
-        .size(constants::CANVAS_WIDTH, constants::CANVAS_HEIGHT)
-        .run();
+    let viz_type = args.get(1);
+
+    let viz: Box<dyn Vizualization> = if let Some(s) = viz_type {
+        match s.as_str() {
+            "stops" => Box::new(StopsViz::default()),
+            "trips" => Box::new(TripsViz::new()),
+            "audio" => Box::new(AudioViz::default()),
+            _ => Box::new(TripsViz::new()),
+        }
+    } else {
+        Box::new(TripsViz::new())
+    };
+
+    viz.run();
 }

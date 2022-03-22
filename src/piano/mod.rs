@@ -1,6 +1,10 @@
-use csv::{Reader, StringRecord};
+use csv::Reader;
+use csv::StringRecord;
+use rodio::dynamic_mixer;
 use rodio::source::SineWave;
-use rodio::{dynamic_mixer, OutputStream, Sink, Source};
+use rodio::OutputStream;
+use rodio::Sink;
+use rodio::Source;
 use std::collections::HashMap;
 use std::fmt::Display;
 use std::time::Duration;
@@ -35,7 +39,7 @@ impl Display for Note {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Piano {
     pub keys: HashMap<String, Note>,
 }
@@ -71,5 +75,11 @@ impl Piano {
         sink.append(mixer);
         sink.sleep_until_end();
         sink.detach();
+    }
+}
+
+impl Default for Piano {
+    fn default() -> Self {
+        Self::new()
     }
 }

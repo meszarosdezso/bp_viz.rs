@@ -1,4 +1,5 @@
-use gtfs_structures::{Gtfs, Trip};
+use gtfs_structures::Gtfs;
+use gtfs_structures::Trip;
 
 use crate::utils::boundaries::Boundaries;
 

@@ -3,52 +3,53 @@ pub mod stops;
 pub mod trips;
 
 use gtfs_structures::Gtfs;
+use nannou::app::EventFn;
+use nannou::app::ModelFn;
+use nannou::app::UpdateFn;
+use nannou::app::ViewFn;
+use nannou::Event;
 
 use crate::utils::meta::Meta;
 
-pub struct Model<C>
-where
-    C: Default,
-{
-    context: C,
-    gtfs: Gtfs,
+#[derive(Default)]
+pub struct Model<Context> {
     meta: Meta,
+    gtfs: Gtfs,
+    context: Context,
 }
 
-impl<C: Default> Model<C> {
-    #[allow(unused)]
-    fn new() -> Self {
-        Self {
-            context: Default::default(),
-            gtfs: Gtfs::default(),
-            meta: Meta::default(),
-        }
-    }
-
-    fn from_url(url: &str) -> Model<C> {
-        println!("Reading data from {}...", url);
-        let gtfs = Gtfs::new(url).expect("Error while reading data.");
+impl<Context> Model<Context>
+where
+    Context: Default,
+{
+    fn from_url(url: &str) -> Self {
+        eprintln!("Parsing GTFS at {url}...");
+        let gtfs = Gtfs::new(url).expect("Failed to load GTFS");
+        let meta = Meta::from_gtfs(&gtfs);
 
         Self {
-            context: Default::default(),
             gtfs,
-            meta: Meta::default(),
+            meta,
+            ..Default::default()
         }
-    }
-
-    fn meta<F>(mut self, meta_fn: F) -> Self
-    where
-        F: FnOnce(&Self) -> Meta,
-    {
-        self.meta = meta_fn(&self);
-        self
     }
 
     fn context<F>(mut self, context_fn: F) -> Self
     where
-        F: FnOnce(&Self) -> C,
+        F: FnOnce(&Self) -> Context,
     {
         self.context = context_fn(&self);
         self
     }
+}
+
+pub trait Viz {
+    fn model(&self) -> ModelFn<Model<Box<Self>>>;
+    fn update(&self) -> UpdateFn<Model<Box<Self>>>;
+    fn event(&self) -> EventFn<Model<Box<Self>>, Event>;
+    fn view(&self) -> ViewFn<Model<Box<Self>>>;
+}
+
+pub trait Vizualization {
+    fn run(&self);
 }

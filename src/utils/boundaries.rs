@@ -1,4 +1,5 @@
-use crate::constants::{CANVAS_HEIGHT, CANVAS_WIDTH};
+use crate::constants::CANVAS_HEIGHT;
+use crate::constants::CANVAS_WIDTH;
 
 #[derive(Debug)]
 pub struct Boundaries {
